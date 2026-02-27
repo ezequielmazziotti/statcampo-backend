@@ -1,6 +1,5 @@
 """
 StatCampo — Backend API
-FastAPI + httpx para proxy a api-football.com
 """
 
 from fastapi import FastAPI, HTTPException, Query
@@ -20,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="StatCampo API", version="1.0.0")
 
-# ── CORS ─────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +27,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── CONFIG ────────────────────────────────────────────────────────────────────
 FOOTBALL_API_KEY  = os.getenv("FOOTBALL_API_KEY", "")
 FOOTBALL_API_BASE = "https://v3.football.api-sports.io"
 
@@ -75,8 +72,9 @@ async def health():
         "version": "1.0.0"
     }
 
-# ── SERVIR FRONTEND ───────────────────────────────────────────────────────────
+# ── FRONTEND — tiene que ir ULTIMO para no interceptar /api/* ─────────────────
 STATIC_DIR = Path(__file__).parent / "static"
 
-if STATIC_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+@app.get("/")
+async def serve_frontend():
+    return FileResponse(str(STATIC_DIR / "index.html"))
